@@ -1,228 +1,78 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earn Cash Pro - Ultimate Mini App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Earn Cash Pro</title>
+    <script>
+        if (window.location.protocol === 'http:') {
+            window.location.replace(window.location.href.replace('http:', 'https:'));
+        }
+    </script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --primary: #0088cc; --secondary: #28a745; --bg: #f4f7f6; --accent: #e91e63; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; }
-        .header { background: var(--primary); color: white; padding: 25px 20px; border-radius: 0 0 25px 25px; text-align: center; }
-        .stat-card { background: white; margin: -25px 20px 20px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-weight: bold; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .task-btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; overflow-x: auto; padding: 10px 0; border-top: 1px solid #ddd; z-index: 1000; }
-        .nav-item { flex: 0 0 20%; border: none; background: none; color: #666; font-size: 11px; cursor: pointer; }
-        .active-nav { color: var(--primary); font-weight: bold; }
-        #user-notification { background: #fff3cd; color: #856404; margin: 10px 20px; padding: 10px; border-radius: 8px; border-left: 5px solid #ffeeba; display: none; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .ad-box { background: #fffde7; border: 1px dashed #ffd54f; padding: 10px; margin: 10px 0; font-size: 11px; text-align: center; color: #888; }
+        body { font-family: sans-serif; margin: 0; padding: 0; background: #fdfdfd; text-align: center; }
+        .header { background: #0088cc; color: white; padding: 20px; font-size: 22px; font-weight: bold; border-radius: 0 0 20px 20px; }
+        .card { background: white; margin: 15px; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn { background: #0088cc; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .balance-box { background: #fff; padding: 10px; margin: 10px; border-radius: 10px; display: flex; justify-content: space-between; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h2 style="margin:0;">Earn Cash Pro</h2>
-    <p style="margin:5px 0 0; font-size:12px; opacity:0.9;">সহজ কাজ করুন, পেমেন্ট নিন দ্রুত!</p>
-</div>
+<div class="header">💰 Earn Cash Pro</div>
 
-<div class="stat-card">
+<div class="balance-box">
     <span>💰 ব্যালেন্স: <span id="user-coins">0</span></span>
     <span>🆔 ID: <span id="user-id-display">...</span></span>
 </div>
 
-<div id="user-notification">
-    <b>🔔 নোটিশ:</b> <span id="notice-text"></span>
+<div class="card">
+    <h3>🎡 লাকি স্পিন</h3>
+    <p>স্পিন করে প্রতিদিন জিতে নিন আকর্ষণীয় পুরস্কার!</p>
+    <button class="btn" onclick="startSpin()">স্পিন করুন</button>
 </div>
 
-<div id="main-content">
-    <div id="home-page" class="page">
-        <div class="card">
-            <h3>🎥 ভিডিও টাস্ক (১৫ সে.)</h3>
-            <div class="ad-box">
-                <script>(function(s){s.dataset.zone='10600279',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-            </div>
-            <button class="task-btn" id="v-btn" onclick="startVideoTask()">অ্যাড দেখে ১০ কয়েন নিন</button>
-            <p id="v-timer" style="text-align:center; color:red;"></p>
-        </div>
-        <div class="card">
-            <h3>🔗 সোশ্যাল মিডিয়া টাস্ক</h3>
-            <button class="task-btn" style="background:#ff0000" onclick="handleSocial('https://www.youtube.com/@sobujsalmanofficial')">YouTube Subscribe</button>
-            <button class="task-btn" style="background:#1877f2" onclick="handleSocial('https://www.facebook.com/bdbigbazzarofficial')">Facebook Follow</button>
-        </div>
-    </div>
-
-    <div id="games-page" class="page" style="display:none;">
-        <div class="card" style="background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; text-align:center;">
-            <h3>🎁 ডেইলি বোনাস</h3>
-            <button class="task-btn" style="background:white; color:#6e8efb" onclick="claimDaily()">বোনাস ক্লেইম করুন</button>
-        </div>
-        <div class="card" style="text-align:center;">
-            <h3>🎡 লাকি স্পিন</h3>
-            <div id="wheel" style="font-size:40px;">🎡</div>
-            <button class="task-btn" id="spin-btn" onclick="startSpin()">স্পিন করে জিতুন</button>
-        </div>
-    </div>
-
-    <div id="withdraw-page" class="page" style="display:none;">
-        <div class="card">
-            <h3>💸 পেমেন্ট নিন</h3>
-            <select id="method">
-                <option value="Bkash">Bkash</option>
-                <option value="Nagad">Nagad</option>
-                <option value="Recharge">Mobile Recharge</option>
-            </select>
-            <input type="number" id="w-amount" placeholder="কয়েন (মিনিমাম ৫০০০)">
-            <input type="text" id="w-number" placeholder="আপনার নম্বর">
-            <button class="task-btn" style="background:var(--accent)" onclick="submitWithdraw()">রিকোয়েস্ট পাঠান</button>
-        </div>
-    </div>
-
-    <div id="support-page" class="page" style="display:none;">
-        <div class="card" style="text-align:center;">
-            <h3>🎧 হেল্প সেন্টার</h3>
-            <div class="ad-box">বিজ্ঞাপন</div>
-            <button class="task-btn" onclick="window.open('https://t.me/aibdkingbot')">Admin (Telegram)</button>
-            <button class="task-btn" style="background:var(--secondary)" onclick="window.open('https://t.me/aibdking')">Official Channel</button>
-        </div>
-
-        <div class="card" style="text-align: left; font-size: 13px; line-height: 1.6; color: #444; border-top: 4px solid var(--accent);">
-            <h4 style="text-align: center; color: var(--accent);">⚠️ নিয়মাবলী ও শর্তাবলি</h4>
-            <ol>
-                <li><b>ভিপিএন (VPN):</b> টাস্ক করার সময় VPN ব্যবহার নিষিদ্ধ।</li>
-                <li><b>অটো-ক্লিক:</b> অটো-ক্লিক ব্যবহার করলে আইডি ব্লক হবে।</li>
-                <li><b>ফলো/সাবস্ক্রাইব:</b> আনফলো করলে কয়েন কেটে নেওয়া হবে।</li>
-                <li><b>পেমেন্ট সময়:</b> ২৪-৪৮ ঘণ্টার মধ্যে পেমেন্ট দেওয়া হয়।</li>
-            </ol>
-            <p style="font-weight: bold; text-align: center; color: red;">* নিয়ম না মানলে পেমেন্ট দেওয়া হবে না।</p>
-        </div>
-    </div>
-
-    <div id="admin-page" class="page" style="display:none;">
-        <div class="card" style="border:2px solid red;">
-            <h3>📢 অ্যাডমিন ব্রডকাস্ট</h3>
-            <textarea id="admin-msg" rows="3" style="width:100%;" placeholder="মেসেজ লিখুন..."></textarea>
-            <button class="task-btn" onclick="sendBroadcast()">সবার কাছে পাঠান</button>
-        </div>
-    </div>
-</div>
-
-<div class="nav-bar">
-    <button class="nav-item active-nav" onclick="showTab('home', this)">🏠<br>হোম</button>
-    <button class="nav-item" onclick="showTab('games', this)">🎮<br>গেমস</button>
-    <button class="nav-item" onclick="showTab('withdraw', this)">💰<br>উইথড্র</button>
-    <button class="nav-item" onclick="showTab('support', this)">🎧<br>সাপোর্ট</button>
-    <button class="nav-item" onclick="showTab('admin', this)">⚙️<br>অ্যাডমিন</button>
+<div class="card">
+    <h3>🎁 ডেইলি বোনাস</h3>
+    <button class="btn" style="background: #28a745;" onclick="claimDaily()">বোনাস সংগ্রহ করুন</button>
 </div>
 
 <script>
-    // Firebase Configuration
+    // আপনার ফায়ারবেস লিঙ্ক
     const firebaseConfig = {
-        apiKey: "AIzaSyDJRLhy3fnwDUvYDKSZK6UFo5DHskfn-A4",
-        authDomain: "my-first-app-9f15d.firebaseapp.com",
-        databaseURL: "https://my-first-app-9f15d-default-rtdb.firebaseio.com",
-        projectId: "my-first-app-9f15d",
-        storageBucket: "my-first-app-9f15d.firebasestorage.app",
-        messagingSenderId: "869439564905",
-        appId: "1:869439564905:web:ac84c328fbb1c73281d6f8",
-        measurementId: "G-K33RV72MQE"
+        databaseURL: "https://earn-cash-apppro-default-rtdb.firebaseio.com"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let userId = localStorage.getItem('bt_uid') || "user_" + Math.floor(1000 + Math.random() * 9000);
+    // ইউজার আইডি সেটআপ
+    let userId = localStorage.getItem('bt_uid') || 'user_' + Math.floor(1000 + Math.random() * 9000);
     localStorage.setItem('bt_uid', userId);
     document.getElementById('user-id-display').innerText = userId;
-    let balance = 0;
 
-    // Balance Synchronization
+    // ডাটাবেস থেকে ব্যালেন্স আনা
     db.ref('users/' + userId).on('value', (s) => {
-        balance = s.val() ? s.val().coins : 0;
-        document.getElementById('user-coins').innerText = balance;
-        if(!s.val()) db.ref('users/' + userId).set({ coins: 0, userId: userId });
+        let val = s.val();
+        document.getElementById('user-coins').innerText = (val && val.coins) ? val.coins : 0;
+        if(!val) db.ref('users/' + userId).set({ coins: 0, userid: userId });
     });
-
-    // Broadcast Listener
-    db.ref('broadcast/').on('value', (s) => {
-        if(s.val()) {
-            document.getElementById('user-notification').style.display = 'block';
-            document.getElementById('notice-text').innerText = s.val().message;
-        }
-    });
-
-    // --- Task Functions ---
-
-    // Social Media Task Handler
-    function handleSocial(url) {
-        window.open(url, '_blank');
-        setTimeout(() => {
-            updateCoins(20);
-            alert("টাস্ক সফল! ২০ কয়েন বোনাস পেয়েছেন।");
-        }, 5000);
-    }
-
-    // Video Task Handler
-    function startVideoTask() {
-        let btn = document.getElementById('v-btn');
-        let count = 15;
-        btn.disabled = true;
-        window.open('https://omg10.com/4/10587051', '_blank');
-        let t = setInterval(() => {
-            document.getElementById('v-timer').innerText = "অপেক্ষা: " + count-- + "s";
-            if(count < 0) { 
-                clearInterval(t); 
-                updateCoins(10); 
-                btn.disabled = false; 
-                document.getElementById('v-timer').innerText = ""; 
-                alert("১০ কয়েন পেয়েছেন!"); 
-            }
-        }, 1000);
-    }
 
     function claimDaily() {
-        const last = localStorage.getItem('last_d');
-        if(last && Date.now() - last < 86400000) return alert("আজকের বোনাস নেওয়া শেষ!");
-        updateCoins(50); localStorage.setItem('last_d', Date.now()); alert("৫০ কয়েন বোনাস পেয়েছেন!");
+        let last_d = localStorage.getItem('last_d');
+        if(last_d && Date.now() - last_d < 86400000) return alert("আজকের বোনাস নেওয়া শেষ!");
+        db.ref('users/' + userId + '/coins').transaction(c => (c || 0) + 50);
+        localStorage.setItem('last_d', Date.now());
+        alert("৫০ কয়েন বোনাস পেয়েছেন!");
     }
 
     function startSpin() {
-        updateCoins(Math.floor(Math.random() * 20)); alert("স্পিন সফল!");
-    }
-
-    function updateCoins(a) { db.ref('users/' + userId).update({ coins: balance + a }); }
-
-    function submitWithdraw() {
-        let a = parseInt(document.getElementById('w-amount').value);
-        let num = document.getElementById('w-number').value;
-        if(a >= 5000 && balance >= a) {
-            db.ref('withdraws').push({ userId, amount: a, number: num, status: 'Pending' });
-            updateCoins(-a); alert("রিকোয়েস্ট পাঠানো হয়েছে!");
-        } else {
-            alert("ব্যালেন্স কম বা ভুল তথ্য!");
-        }
-    }
-
-    function sendBroadcast() {
-        const msg = document.getElementById('admin-msg').value;
-        db.ref('broadcast/').set({ message: msg });
-        alert("পাঠানো হয়েছে!");
-    }
-
-    function showTab(t, b) {
-        if (t === 'admin') {
-            let password = prompt("অ্যাডমিন পাসওয়ার্ড দিন:");
-            if (password !== "IloveAllahIloveMuhammad807952$") {
-                alert("ভুল পাসওয়ার্ড! আপনি অ্যাডমিন নন।");
-                return;
-            }
-        }
-        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-        document.getElementById(t + '-page').style.display = 'block';
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active-nav'));
-        b.classList.add('active-nav');
+        let win = Math.floor(Math.random() * 20);
+        db.ref('users/' + userId + '/coins').transaction(c => (c || 0) + win);
+        alert("আপনি " + win + " কয়েন জিতেছেন!");
     }
 </script>
 </body>
 </html>
+
