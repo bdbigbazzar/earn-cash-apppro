@@ -3,146 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earn Cash Pro - Ultimate Mini App</title>
+    <title>Earn Cash Pro - Full Suite</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
     <style>
         :root { --primary: #0088cc; --secondary: #28a745; --bg: #f4f7f6; --accent: #e91e63; --card-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; }
-        .header { background: var(--primary); color: white; padding: 25px 20px; border-radius: 0 0 25px 25px; text-align: center; }
-        .stat-card { background: white; margin: -25px 20px 20px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; box-shadow: var(--card-shadow); font-weight: bold; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .task-btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; transition: 0.3s; }
-        .task-btn:active { transform: scale(0.98); }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 1000; }
-        .nav-item { border: none; background: none; color: #666; font-size: 11px; cursor: pointer; text-align: center; }
-        .active-nav { color: var(--primary); font-weight: bold; }
-        #user-notification { background: #fff3cd; color: #856404; margin: 10px 20px; padding: 10px; border-radius: 8px; border-left: 5px solid #ffeeba; display: none; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .ad-box { background: #fffde7; border: 1px dashed #ffd54f; padding: 10px; margin: 10px 0; font-size: 11px; text-align: center; color: #888; }
+        .header { background: var(--primary); color: white; padding: 25px 20px; border-radius: 0 0 25px 25px; text-align: center; position: relative; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin: 15px; box-shadow: var(--card-shadow); }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .task-btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s; margin-top: 5px; }
         
-        /* New Styles for Leaderboard & Referral */
-        .leader-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .leader-table th, .leader-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        .refer-box { background: #e3f2fd; padding: 15px; border-radius: 12px; text-align: center; border: 2px dashed #2196f3; margin-top: 10px; }
+        /* UI Elements */
+        #auth-container, #main-app, #vpn-blocker { display: none; }
+        #video-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+        #player-container { width: 85%; max-width: 380px; aspect-ratio: 9/16; background: #000; border-radius: 15px; overflow: hidden; }
+        .tips-card { background: #fff9c4; border-left: 5px solid #fbc02d; padding: 15px; border-radius: 8px; margin: 15px; font-size: 13px; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h2 style="margin:0;">Earn Cash Pro</h2>
-    <p style="margin:5px 0 0; font-size:12px; opacity:0.9;">সহজ কাজ করুন, পেমেন্ট নিন দ্রুত!</p>
+<div id="vpn-blocker" style="text-align:center; padding-top:100px;">
+    <h1 style="color:red;">🚫 VPN Detected!</h1>
+    <p>দয়া করে ভিপিএন বন্ধ করে অ্যাপটি ব্যবহার করুন।</p>
+    <button onclick="location.reload()" class="task-btn" style="width:200px;">রিফ্রেশ করুন</button>
 </div>
 
-<div class="stat-card">
-    <span>💰 ব্যালেন্স: <span id="user-coins">0</span></span>
-    <span>🆔 ID: <span id="user-id-display">...</span></span>
-</div>
-
-<div id="user-notification">
-    <b>🔔 নোটিশ:</b> <span id="notice-text"></span>
-</div>
-
-<div id="main-content">
-    <div id="home-page" class="page">
-        <div class="card">
-            <h3>🎥 ভিডিও টাস্ক (১৫ সে.)</h3>
-            <div class="ad-box">ভিডিও দেখুন কয়েন জিতুন</div>
-            <button class="task-btn" id="v-btn" onclick="startVideoTask()">অ্যাড দেখে ১০ কয়েন নিন</button>
-            <p id="v-timer" style="text-align:center; color:red; font-weight:bold;"></p>
-        </div>
-        
-        <div class="card">
-            <h3>👫 রেফারাল বোনাস</h3>
-            <div class="refer-box">
-                <p style="margin:0; font-size:12px; color:#555;">আপনার রেফার কোড:</p>
-                <h3 id="ref-code-text" style="margin:5px 0; color:var(--primary);">...</h3>
-                <button class="task-btn" style="background:#673ab7; font-size: 13px;" onclick="shareReferral()">বন্ধুদের সাথে শেয়ার করুন</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>🔗 সোশ্যাল মিডিয়া টাস্ক</h3>
-            <button class="task-btn" style="background:#ff0000" onclick="handleSocial('https://www.youtube.com/@sobujsalmanofficial')">YouTube Subscribe</button>
-            <button class="task-btn" style="background:#1877f2" onclick="handleSocial('https://www.facebook.com/bdbigbazzarofficial')">Facebook Follow</button>
-        </div>
-    </div>
-
-    <div id="games-page" class="page" style="display:none;">
-        <div class="card" style="background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; text-align:center;">
-            <h3>🎁 ডেইলি বোনাস</h3>
-            <button class="task-btn" style="background:white; color:#6e8efb" onclick="claimDaily()">বোনাস ক্লেইম করুন</button>
-        </div>
-        <div class="card" style="text-align:center;">
-            <h3>🎡 লাকি স্পিন</h3>
-            <div id="wheel" style="font-size:50px; margin: 10px 0;">🎡</div>
-            <button class="task-btn" id="spin-btn" onclick="startSpin()">স্পিন করে জিতুন</button>
-        </div>
-    </div>
-
-    <div id="leaderboard-page" class="page" style="display:none;">
-        <div class="card">
-            <h3 style="text-align:center;">🏆 সেরা ১০ অর্জনকারী</h3>
-            <table class="leader-table">
-                <thead>
-                    <tr><th>Rank</th><th>User ID</th><th>Coins</th></tr>
-                </thead>
-                <tbody id="leader-body">
-                    <tr><td colspan="3" style="text-align:center;">লোড হচ্ছে...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="withdraw-page" class="page" style="display:none;">
-        <div class="card">
-            <h3>💸 পেমেন্ট নিন</h3>
-            <select id="method">
-                <option value="Bkash">Bkash</option>
-                <option value="Nagad">Nagad</option>
-                <option value="Recharge">Mobile Recharge</option>
-            </select>
-            <input type="number" id="w-amount" placeholder="কয়েন (মিনিমাম ৫০০০)">
-            <input type="text" id="w-number" placeholder="আপনার নম্বর">
-            <button class="task-btn" style="background:var(--accent)" onclick="submitWithdraw()">রিকোয়েস্ট পাঠান</button>
-        </div>
-    </div>
-
-    <div id="support-page" class="page" style="display:none;">
-        <div class="card" style="text-align:center;">
-            <h3>🎧 হেল্প সেন্টার</h3>
-            <button class="task-btn" onclick="window.open('https://t.me/aibdkingbot')">Admin (Telegram)</button>
-            <button class="task-btn" style="background:var(--secondary)" onclick="window.open('https://t.me/aibdking')">Official Channel</button>
-        </div>
-        <div class="card" style="font-size: 13px; line-height: 1.6; color: #444; border-top: 4px solid var(--accent);">
-            <h4 style="text-align: center; color: var(--accent);">⚠️ নিয়মাবলী</h4>
-            <ol>
-                <li>VPN ব্যবহার করা সম্পূর্ণ নিষিদ্ধ।</li>
-                <li>এক ডিভাইসে একাধিক একাউন্ট করা যাবে না।</li>
-                <li>আনফলো করলে কয়েন কেটে নেওয়া হবে।</li>
-            </ol>
-        </div>
-    </div>
-
-    <div id="admin-page" class="page" style="display:none;">
-        <div class="card" style="border:2px solid red;">
-            <h3>📢 অ্যাডমিন প্যানেল</h3>
-            <textarea id="admin-msg" rows="3" placeholder="নতুন নোটিশ লিখুন..."></textarea>
-            <button class="task-btn" onclick="sendBroadcast()">নোটিশ আপডেট করুন</button>
-        </div>
+<div id="auth-container">
+    <div class="header"><h2>Earn Cash Pro</h2><p>আপনার একাউন্টে লগইন করুন</p></div>
+    <div class="card">
+        <h3 id="auth-title">লগইন</h3>
+        <input type="email" id="email" placeholder="ইমেল এড্রেস">
+        <input type="password" id="password" placeholder="পাসওয়ার্ড">
+        <button class="task-btn" onclick="handleAuth()" id="auth-btn">লগইন</button>
+        <p style="text-align:center; font-size:13px; margin-top:15px; cursor:pointer; color:var(--primary);" onclick="toggleAuth()">একাউন্ট নেই? নতুন খুলুন</p>
     </div>
 </div>
 
-<div class="nav-bar">
-    <button class="nav-item active-nav" onclick="showTab('home', this)">🏠<br>হোম</button>
-    <button class="nav-item" onclick="showTab('games', this)">🎮<br>গেমস</button>
-    <button class="nav-item" onclick="showTab('leaderboard', this); loadLeaderboard()">🏆<br>সেরা ১০</button>
-    <button class="nav-item" onclick="showTab('withdraw', this)">💰<br>উইথড্র</button>
-    <button class="nav-item" onclick="showTab('admin', this)">⚙️<br>সেটিংস</button>
+<div id="main-app">
+    <div class="header">
+        <h2 style="margin:0;">Earn Cash Pro</h2>
+        <p id="user-display" style="font-size:12px; opacity:0.8;"></p>
+        <button onclick="logout()" style="position:absolute; right:15px; top:15px; background:none; border:1px solid white; color:white; border-radius:15px; padding:2px 10px; font-size:10px;">লগআউট</button>
+    </div>
+
+    <div class="card" style="margin-top:-20px; text-align:center;">
+        <h2 style="margin:0; color:var(--primary);">💰 <span id="user-coins">0</span></h2>
+        <p style="margin:0; font-size:12px; color:#666;">আপনার বর্তমান ব্যালেন্স</p>
+    </div>
+
+    <div class="tips-card">
+        <b>💡 প্রো-টিপস:</b> ৯:১৬ ফরম্যাটের ভিডিও রিওয়ার্ড বেশি দেয়। ১-৩ মাস নিয়মিত কাজ করুন।
+    </div>
+
+    <div class="card">
+        <h3>🎬 Watch & Earn</h3>
+        <button class="task-btn" style="background:#ff0000;" onclick="openVideoTask('aiCjZQesNvo')">ভিডিও দেখুন (১০ কয়েন)</button>
+    </div>
+
+    <div class="card">
+        <h3>💸 উইথড্র রিকোয়েস্ট</h3>
+        <select id="w-method">
+            <option value="Bkash">বিকাশ (Bkash)</option>
+            <option value="Nagad">নগদ (Nagad)</option>
+        </select>
+        <input type="number" id="w-amount" placeholder="কয়েন পরিমাণ (মিনিমাম ৫০০০)">
+        <input type="text" id="w-number" placeholder="মোবাইল নম্বর">
+        <button class="task-btn" style="background:var(--secondary);" onclick="submitWithdraw()">টাকা তুলুন</button>
+    </div>
+
+    <div class="card" id="admin-panel" style="display:none; border:2px dashed red;">
+        <h3 style="color:red;">⚙️ অ্যাডমিন কন্ট্রোল</h3>
+        <div id="withdraw-list" style="font-size:12px;"></div>
+    </div>
+    
+    <p style="text-align:center;"><button onclick="openAdmin()" style="background:none; border:none; color:#ccc; font-size:10px;">Admin Login</button></p>
+</div>
+
+<div id="video-overlay">
+    <div id="player-container"><div id="yt-player"></div></div>
+    <p style="color:white; margin-top:10px;">ভিডিও শেষ হলে অটো-ক্লোজ হবে...</p>
 </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
+    // --- ১. ফায়ারবেস কনফিগারেশন ---
     const firebaseConfig = {
         apiKey: "AIzaSyDJRLhy3fnwDUvYDKSZK6UFo5DHskfn-A4",
         authDomain: "my-first-app-9f15d.firebaseapp.com",
@@ -150,135 +96,134 @@
         projectId: "my-first-app-9f15d",
         storageBucket: "my-first-app-9f15d.firebasestorage.app",
         messagingSenderId: "869439564905",
-        appId: "1:869439564905:web:ac84c328fbb1c73281d6f8",
-        measurementId: "G-K33RV72MQE"
+        appId: "1:869439564905:web:ac84c328fbb1c73281d6f8"
     };
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.database();
 
-    let userId = localStorage.getItem('bt_uid') || "user_" + Math.floor(1000 + Math.random() * 9000);
-    localStorage.setItem('bt_uid', userId);
-    document.getElementById('user-id-display').innerText = userId;
-    document.getElementById('ref-code-text').innerText = userId;
+    let currentUser = null;
     let balance = 0;
+    let isLoginMode = true;
 
-    // ব্যালেন্স সিঙ্ক
-    db.ref('users/' + userId).on('value', (s) => {
-        let data = s.val();
-        balance = data ? data.coins : 0;
-        document.getElementById('user-coins').innerText = balance;
-        if(!data) db.ref('users/' + userId).set({ coins: 0, userId: userId });
-    });
-
-    // নোটিশ লিসেনার
-    db.ref('broadcast/').on('value', (s) => {
-        if(s.val()) {
-            document.getElementById('user-notification').style.display = 'block';
-            document.getElementById('notice-text').innerText = s.val().message;
-        }
-    });
-
-
-
-    function startVideoTask() {
-    let btn = document.getElementById('v-btn');
-    let timerDisplay = document.getElementById('v-timer');
-    let count = 15;
-    btn.disabled = true;
-
-    let youtubeURL = 'https://youtube.com/shorts/aiCjZQesNvo?si=xJqupFBmDDlXinIC'; 
-    
-    window.open(youtubeURL, '_blank');
-    
-    let t = setInterval(() => {
-        timerDisplay.innerText = "ভিডিওটি দেখুন: " + count-- + "s";
-        if(count < 0) { 
-            clearInterval(t); 
-            updateCoins(10); // ১০ কয়েন যোগ হবে
-            btn.disabled = false; 
-            timerDisplay.innerText = ""; 
-            alert("ভিডিও দেখার জন্য ১০ কয়েন সফলভাবে যোগ হয়েছে!"); 
-        }
-    }, 1000);
+    // --- ২. ভিপিএন ডিটেকশন ---
+    async function checkVPN() {
+        try {
+            const res = await fetch('http://ip-api.com/json/?fields=proxy,hosting');
+            const data = await res.json();
+            if (data.proxy || data.hosting) {
+                document.getElementById('vpn-blocker').style.display = 'block';
+            } else {
+                initAuth();
+            }
+        } catch (e) { initAuth(); }
     }
-    
+    checkVPN();
 
-    function handleSocial(url) {
-        window.open(url, '_blank');
-        setTimeout(() => {
-            updateCoins(20);
-            alert("টাস্ক ভেরিফাই করা হয়েছে! ২০ কয়েন বোনাস পেয়েছেন।");
-        }, 8000);
-    }
-
-    function claimDaily() {
-        const last = localStorage.getItem('last_d');
-        const now = Date.now();
-        if(last && now - last < 86400000) return alert("২৪ ঘণ্টা পর আবার চেষ্টা করুন!");
-        updateCoins(50); 
-        localStorage.setItem('last_d', now); 
-        alert("৫০ কয়েন ডেইলি বোনাস পেয়েছেন!");
-    }
-
-    function startSpin() {
-        let win = Math.floor(Math.random() * 20);
-        updateCoins(win); 
-        alert("আপনি জিতেছেন " + win + " কয়েন!");
-    }
-
-    function updateCoins(a) { 
-        db.ref('users/' + userId).update({ coins: balance + a }); 
-    }
-
-    // লিডারবোর্ড লোড করা
-    function loadLeaderboard() {
-        const body = document.getElementById('leader-body');
-        db.ref('users').orderByChild('coins').limitToLast(10).once('value', (snapshot) => {
-            body.innerHTML = "";
-            let data = [];
-            snapshot.forEach(item => { data.push(item.val()); });
-            data.reverse().forEach((u, i) => {
-                body.innerHTML += `<tr><td>${i+1}</td><td>${u.userId}</td><td>${u.coins}</td></tr>`;
-            });
+    // --- ৩. অথেন্টিকেশন লজিক ---
+    function initAuth() {
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                document.getElementById('user-display').innerText = user.email;
+                loadData(user.uid);
+            } else {
+                document.getElementById('auth-container').style.display = 'block';
+                document.getElementById('main-app').style.display = 'none';
+            }
         });
     }
 
-    function shareReferral() {
-        const msg = `Earn Cash Pro অ্যাপে আমার রেফার কোড ${userId} ব্যবহার করে টাকা আয় করুন!`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+    function toggleAuth() {
+        isLoginMode = !isLoginMode;
+        document.getElementById('auth-title').innerText = isLoginMode ? "লগইন" : "নিবন্ধন (Sign Up)";
+        document.getElementById('auth-btn').innerText = isLoginMode ? "লগইন" : "সাইন-আপ করুন";
     }
 
+    function handleAuth() {
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('password').value;
+        if(isLoginMode) auth.signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
+        else auth.createUserWithEmailAndPassword(e, p).then(res => {
+            db.ref('users/' + res.user.uid).set({ coins: 0, email: e });
+        }).catch(err => alert(err.message));
+    }
+
+    function logout() { auth.signOut(); }
+
+    // --- ৪. ডাটা লোড ও আপডেট ---
+    function loadData(uid) {
+        db.ref('users/' + uid).on('value', s => {
+            balance = s.val() ? s.val().coins : 0;
+            document.getElementById('user-coins').innerText = balance;
+        });
+    }
+
+    function updateCoins(amount) {
+        if(currentUser) db.ref('users/' + currentUser.uid).update({ coins: balance + amount });
+    }
+
+    // --- ৫. ইউটিউব এপিআই ও ভিডিও টাস্ক ---
+    let player;
+    let tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    function openVideoTask(vId) {
+        document.getElementById('video-overlay').style.display = 'flex';
+        if (player) player.loadVideoById(vId);
+        else {
+            player = new YT.Player('yt-player', {
+                height: '100%', width: '100%', videoId: vId,
+                playerVars: { 'autoplay': 0, 'controls': 1 },
+                events: { 'onStateChange': e => {
+                    if (e.data == YT.PlayerState.ENDED) {
+                        updateCoins(10);
+                        alert("১০ কয়েন যোগ হয়েছে!");
+                        document.getElementById('video-overlay').style.display = 'none';
+                        player.stopVideo();
+                    }
+                }}
+            });
+        }
+    }
+
+    // --- ৬. উইথড্র সিস্টেম ---
     function submitWithdraw() {
-        let a = parseInt(document.getElementById('w-amount').value);
-        let n = document.getElementById('w-number').value;
-        if(a >= 5000 && balance >= a && n.length > 10) {
-            db.ref('withdraws').push({ userId, amount: a, number: n, status: 'Pending', time: Date.now() });
-            updateCoins(-a); 
-            alert("পেমেন্ট রিকোয়েস্ট পাঠানো হয়েছে! ২৪ ঘণ্টার মধ্যে পেমেন্ট পাবেন।");
-        } else alert("সঠিক তথ্য দিন অথবা পর্যাপ্ত ব্যালেন্স নেই (মিনিমাম ৫০০০)!");
+        const amt = parseInt(document.getElementById('w-amount').value);
+        const num = document.getElementById('w-number').value;
+        const method = document.getElementById('w-method').value;
+
+        if (amt >= 5000 && balance >= amt && num.length >= 11) {
+            db.ref('withdraws').push({
+                uid: currentUser.uid, email: currentUser.email,
+                amount: amt, number: num, method: method, time: Date.now()
+            }).then(() => {
+                updateCoins(-amt);
+                alert("রিকোয়েস্ট পাঠানো হয়েছে!");
+            });
+        } else alert("সঠিক তথ্য দিন (মিনিমাম ৫০০০ কয়েন)");
     }
 
-    function sendBroadcast() {
-        let msg = document.getElementById('admin-msg').value;
-        if(msg) {
-            db.ref('broadcast/').set({ message: msg });
-            alert("সফলভাবে নোটিশ আপডেট হয়েছে!");
+    // --- ৭. অ্যাডমিন প্যানেল লজিক ---
+    function openAdmin() {
+        if (prompt("Admin Password:") === "admin123") {
+            document.getElementById('admin-panel').style.display = 'block';
+            const list = document.getElementById('withdraw-list');
+            db.ref('withdraws').on('value', s => {
+                list.innerHTML = "";
+                s.forEach(child => {
+                    const d = child.val();
+                    list.innerHTML += `<div style='border-bottom:1px solid #eee; padding:5px;'>
+                        ${d.email} | ${d.method}: ${d.number} | <b>${d.amount} Coins</b>
+                        <button onclick="db.ref('withdraws/${child.key}').remove()" style='color:red;'>Done/Delete</button>
+                    </div>`;
+                });
+            });
         }
-    }
-
-    function showTab(t, b) {
-        if (t === 'admin') {
-            let password = prompt("অ্যাডমিন পাসওয়ার্ড দিন:");
-            if (password !== "IloveAllahIloveMuhammad807952$") {
-                alert("ভুল পাসওয়ার্ড!"); return;
-            }
-        }
-        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-        document.getElementById(t + '-page').style.display = 'block';
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active-nav'));
-        b.classList.add('active-nav');
     }
 </script>
 </body>
 </html>
-
