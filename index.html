@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earn Cash Pro - Full Suite</title>
+    <title>Earn Cash Pro - Fixed Version</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -15,21 +15,12 @@
         .card { background: white; padding: 20px; border-radius: 15px; margin: 15px; box-shadow: var(--card-shadow); }
         input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .task-btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s; margin-top: 5px; }
-        
-        /* UI Elements */
-        #auth-container, #main-app, #vpn-blocker { display: none; }
+        #auth-container, #main-app { display: none; }
         #video-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
         #player-container { width: 85%; max-width: 380px; aspect-ratio: 9/16; background: #000; border-radius: 15px; overflow: hidden; }
-        .tips-card { background: #fff9c4; border-left: 5px solid #fbc02d; padding: 15px; border-radius: 8px; margin: 15px; font-size: 13px; }
     </style>
 </head>
 <body>
-
-<div id="vpn-blocker" style="text-align:center; padding-top:100px;">
-    <h1 style="color:red;">🚫 VPN Detected!</h1>
-    <p>দয়া করে ভিপিএন বন্ধ করে অ্যাপটি ব্যবহার করুন।</p>
-    <button onclick="location.reload()" class="task-btn" style="width:200px;">রিফ্রেশ করুন</button>
-</div>
 
 <div id="auth-container">
     <div class="header"><h2>Earn Cash Pro</h2><p>আপনার একাউন্টে লগইন করুন</p></div>
@@ -45,17 +36,13 @@
 <div id="main-app">
     <div class="header">
         <h2 style="margin:0;">Earn Cash Pro</h2>
-        <p id="user-display" style="font-size:12px; opacity:0.8;"></p>
+        <p id="user-display" style="font-size:11px; opacity:0.8;"></p>
         <button onclick="logout()" style="position:absolute; right:15px; top:15px; background:none; border:1px solid white; color:white; border-radius:15px; padding:2px 10px; font-size:10px;">লগআউট</button>
     </div>
 
     <div class="card" style="margin-top:-20px; text-align:center;">
         <h2 style="margin:0; color:var(--primary);">💰 <span id="user-coins">0</span></h2>
-        <p style="margin:0; font-size:12px; color:#666;">আপনার বর্তমান ব্যালেন্স</p>
-    </div>
-
-    <div class="tips-card">
-        <b>💡 প্রো-টিপস:</b> ৯:১৬ ফরম্যাটের ভিডিও রিওয়ার্ড বেশি দেয়। ১-৩ মাস নিয়মিত কাজ করুন।
+        <p style="margin:0; font-size:12px; color:#666;">বর্তমান ব্যালেন্স</p>
     </div>
 
     <div class="card">
@@ -65,21 +52,16 @@
 
     <div class="card">
         <h3>💸 উইথড্র রিকোয়েস্ট</h3>
-        <select id="w-method">
-            <option value="Bkash">বিকাশ (Bkash)</option>
-            <option value="Nagad">নগদ (Nagad)</option>
-        </select>
-        <input type="number" id="w-amount" placeholder="কয়েন পরিমাণ (মিনিমাম ৫০০০)">
-        <input type="text" id="w-number" placeholder="মোবাইল নম্বর">
+        <input type="number" id="w-amount" placeholder="কয়েন পরিমাণ (৫০০০+)">
+        <input type="text" id="w-number" placeholder="বিকাশ/নগদ নম্বর">
         <button class="task-btn" style="background:var(--secondary);" onclick="submitWithdraw()">টাকা তুলুন</button>
     </div>
 
-    <div class="card" id="admin-panel" style="display:none; border:2px dashed red;">
+    <p style="text-align:center;"><button onclick="openAdmin()" style="background:none; border:none; color:#ccc; font-size:10px;">Admin Login</button></p>
+    <div id="admin-panel" class="card" style="display:none; border:2px dashed red;">
         <h3 style="color:red;">⚙️ অ্যাডমিন কন্ট্রোল</h3>
         <div id="withdraw-list" style="font-size:12px;"></div>
     </div>
-    
-    <p style="text-align:center;"><button onclick="openAdmin()" style="background:none; border:none; color:#ccc; font-size:10px;">Admin Login</button></p>
 </div>
 
 <div id="video-overlay">
@@ -88,16 +70,18 @@
 </div>
 
 <script>
-    // --- ১. ফায়ারবেস কনফিগারেশন ---
+    // --- আপডেট করা ফায়ারবেস কনফিগারেশন ---
     const firebaseConfig = {
-        apiKey: "AIzaSyDJRLhy3fnwDUvYDKSZK6UFo5DHskfn-A4",
-        authDomain: "my-first-app-9f15d.firebaseapp.com",
-        databaseURL: "https://my-first-app-9f15d-default-rtdb.firebaseio.com",
-        projectId: "my-first-app-9f15d",
-        storageBucket: "my-first-app-9f15d.firebasestorage.app",
-        messagingSenderId: "869439564905",
-        appId: "1:869439564905:web:ac84c328fbb1c73281d6f8"
+      apiKey: "AIzaSyDJRLhy3fnwDUvYDKBZX6UFp5DHskfn-A4",
+      authDomain: "my-first-app-9f15d.firebaseapp.com",
+      databaseURL: "https://my-first-app-9f15d-default-rtdb.firebaseio.com",
+      projectId: "my-first-app-9f15d",
+      storageBucket: "my-first-app-9f15d.firebasestorage.app",
+      messagingSenderId: "669439564905",
+      appId: "1:669439564905:web:ac04c320fbb1c73281d6f8",
+      measurementId: "G-K33RV72MQE"
     };
+
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
@@ -106,35 +90,19 @@
     let balance = 0;
     let isLoginMode = true;
 
-    // --- ২. ভিপিএন ডিটেকশন ---
-    async function checkVPN() {
-        try {
-            const res = await fetch('http://ip-api.com/json/?fields=proxy,hosting');
-            const data = await res.json();
-            if (data.proxy || data.hosting) {
-                document.getElementById('vpn-blocker').style.display = 'block';
-            } else {
-                initAuth();
-            }
-        } catch (e) { initAuth(); }
-    }
-    checkVPN();
-
-    // --- ৩. অথেন্টিকেশন লজিক ---
-    function initAuth() {
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('auth-container').style.display = 'none';
-                document.getElementById('main-app').style.display = 'block';
-                document.getElementById('user-display').innerText = user.email;
-                loadData(user.uid);
-            } else {
-                document.getElementById('auth-container').style.display = 'block';
-                document.getElementById('main-app').style.display = 'none';
-            }
-        });
-    }
+    // ইউজার স্টেট চেক
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('user-display').innerText = user.email;
+            loadData(user.uid);
+        } else {
+            document.getElementById('auth-container').style.display = 'block';
+            document.getElementById('main-app').style.display = 'none';
+        }
+    });
 
     function toggleAuth() {
         isLoginMode = !isLoginMode;
@@ -145,15 +113,19 @@
     function handleAuth() {
         const e = document.getElementById('email').value;
         const p = document.getElementById('password').value;
-        if(isLoginMode) auth.signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
-        else auth.createUserWithEmailAndPassword(e, p).then(res => {
-            db.ref('users/' + res.user.uid).set({ coins: 0, email: e });
-        }).catch(err => alert(err.message));
+        if (!e || !p) return alert("সব ঘর পূরণ করুন!");
+        
+        if(isLoginMode) {
+            auth.signInWithEmailAndPassword(e, p).catch(err => alert("এরর: " + err.message));
+        } else {
+            auth.createUserWithEmailAndPassword(e, p).then(res => {
+                db.ref('users/' + res.user.uid).set({ coins: 0, email: e });
+            }).catch(err => alert("এরর: " + err.message));
+        }
     }
 
     function logout() { auth.signOut(); }
 
-    // --- ৪. ডাটা লোড ও আপডেট ---
     function loadData(uid) {
         db.ref('users/' + uid).on('value', s => {
             balance = s.val() ? s.val().coins : 0;
@@ -165,7 +137,7 @@
         if(currentUser) db.ref('users/' + currentUser.uid).update({ coins: balance + amount });
     }
 
-    // --- ৫. ইউটিউব এপিআই ও ভিডিও টাস্ক ---
+    // --- ইউটিউব এপিআই ---
     let player;
     let tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
@@ -177,7 +149,7 @@
         else {
             player = new YT.Player('yt-player', {
                 height: '100%', width: '100%', videoId: vId,
-                playerVars: { 'autoplay': 0, 'controls': 1 },
+                playerVars: { 'autoplay': 1, 'controls': 1 },
                 events: { 'onStateChange': e => {
                     if (e.data == YT.PlayerState.ENDED) {
                         updateCoins(10);
@@ -190,16 +162,13 @@
         }
     }
 
-    // --- ৬. উইথড্র সিস্টেম ---
     function submitWithdraw() {
         const amt = parseInt(document.getElementById('w-amount').value);
         const num = document.getElementById('w-number').value;
-        const method = document.getElementById('w-method').value;
-
         if (amt >= 5000 && balance >= amt && num.length >= 11) {
             db.ref('withdraws').push({
                 uid: currentUser.uid, email: currentUser.email,
-                amount: amt, number: num, method: method, time: Date.now()
+                amount: amt, number: num, time: Date.now()
             }).then(() => {
                 updateCoins(-amt);
                 alert("রিকোয়েস্ট পাঠানো হয়েছে!");
@@ -207,18 +176,17 @@
         } else alert("সঠিক তথ্য দিন (মিনিমাম ৫০০০ কয়েন)");
     }
 
-    // --- ৭. অ্যাডমিন প্যানেল লজিক ---
     function openAdmin() {
-        if (prompt("Admin Password:") === "admin123") {
+        if (prompt("অ্যাডমিন পাসওয়ার্ড:") === "admin123") {
             document.getElementById('admin-panel').style.display = 'block';
-            const list = document.getElementById('withdraw-list');
             db.ref('withdraws').on('value', s => {
+                const list = document.getElementById('withdraw-list');
                 list.innerHTML = "";
                 s.forEach(child => {
                     const d = child.val();
                     list.innerHTML += `<div style='border-bottom:1px solid #eee; padding:5px;'>
-                        ${d.email} | ${d.method}: ${d.number} | <b>${d.amount} Coins</b>
-                        <button onclick="db.ref('withdraws/${child.key}').remove()" style='color:red;'>Done/Delete</button>
+                        ${d.email} | No: ${d.number} | <b>${d.amount}</b>
+                        <button onclick="db.ref('withdraws/${child.key}').remove()">Done</button>
                     </div>`;
                 });
             });
