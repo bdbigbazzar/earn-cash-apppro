@@ -178,26 +178,30 @@
         }
     });
 
-    // --- টাস্ক ফাংশনসমূহ ---
+
 
     function startVideoTask() {
-        let btn = document.getElementById('v-btn');
-        let timerDisplay = document.getElementById('v-timer');
-        let count = 15;
-        btn.disabled = true;
-        window.open('https://youtube.com/shorts/QUgOv4u3Fq0?si=DvMcbsX31M3UZcny');
-        
-        let t = setInterval(() => {
-            timerDisplay.innerText = "অপেক্ষা করুন: " + count-- + "s";
-            if(count < 0) { 
-                clearInterval(t); 
-                updateCoins(10); 
-                btn.disabled = false; 
-                timerDisplay.innerText = ""; 
-                alert("সাফল্যের সাথে ১০ কয়েন যোগ হয়েছে!"); 
-            }
-        }, 1000);
+    let btn = document.getElementById('v-btn');
+    let timerDisplay = document.getElementById('v-timer');
+    let count = 15;
+    btn.disabled = true;
+
+    let youtubeURL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'; 
+    
+    window.open(youtubeURL, '_blank');
+    
+    let t = setInterval(() => {
+        timerDisplay.innerText = "ভিডিওটি দেখুন: " + count-- + "s";
+        if(count < 0) { 
+            clearInterval(t); 
+            updateCoins(10); // ১০ কয়েন যোগ হবে
+            btn.disabled = false; 
+            timerDisplay.innerText = ""; 
+            alert("ভিডিও দেখার জন্য ১০ কয়েন সফলভাবে যোগ হয়েছে!"); 
+        }
+    }, 1000);
     }
+    
 
     function handleSocial(url) {
         window.open(url, '_blank');
