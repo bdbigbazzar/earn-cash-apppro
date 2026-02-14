@@ -3,221 +3,278 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earn Cash Pro - Ultra Secure</title>
+    <title>Earn Cash Pro - Ultimate Mini App</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --primary: #0088cc; --secondary: #2ecc71; --bg: #f8f9fa; --accent: #e74c3c; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; color: #2c3e50; }
-        
-        /* Auth Styles */
-        #auth-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0088cc, #005f99); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        .auth-card { width: 100%; max-width: 400px; background: white; padding: 35px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; }
-        
-        .header { background: linear-gradient(135deg, #0088cc, #005f99); color: white; padding: 40px 20px 60px; border-radius: 0 0 40px 40px; text-align: center; position: relative; }
-        .stat-card { background: white; margin: -40px 20px 20px; padding: 20px; border-radius: 25px; display: flex; justify-content: space-around; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
-        .card { background: white; padding: 20px; border-radius: 25px; margin: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
-        
-        .task-btn { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 15px; cursor: pointer; width: 100%; font-weight: 700; font-size: 16px; margin-top: 10px; transition: 0.3s; }
-        .task-btn:active { transform: scale(0.95); }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; box-sizing: border-box; background: #f9f9f9; }
-        
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: none; justify-content: space-around; padding: 15px 0; border-top: 1px solid #eee; z-index: 1000; }
-        .nav-item { border: none; background: none; color: #bdc3c7; font-size: 11px; cursor: pointer; text-align: center; }
+        :root { --primary: #0088cc; --secondary: #28a745; --bg: #f4f7f6; --accent: #e91e63; --card-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; }
+        .header { background: var(--primary); color: white; padding: 25px 20px; border-radius: 0 0 25px 25px; text-align: center; }
+        .stat-card { background: white; margin: -25px 20px 20px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; box-shadow: var(--card-shadow); font-weight: bold; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .task-btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; transition: 0.3s; }
+        .task-btn:active { transform: scale(0.98); }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 1000; }
+        .nav-item { border: none; background: none; color: #666; font-size: 11px; cursor: pointer; text-align: center; }
         .active-nav { color: var(--primary); font-weight: bold; }
+        #user-notification { background: #fff3cd; color: #856404; margin: 10px 20px; padding: 10px; border-radius: 8px; border-left: 5px solid #ffeeba; display: none; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .ad-box { background: #fffde7; border: 1px dashed #ffd54f; padding: 10px; margin: 10px 0; font-size: 11px; text-align: center; color: #888; }
         
-        .link-text { color: var(--primary); font-size: 13px; cursor: pointer; margin-top: 10px; display: inline-block; text-decoration: none; }
+        /* New Styles for Leaderboard & Referral */
+        .leader-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .leader-table th, .leader-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .refer-box { background: #e3f2fd; padding: 15px; border-radius: 12px; text-align: center; border: 2px dashed #2196f3; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div id="auth-page">
-    <div class="auth-card">
-        <h2 id="auth-title" style="color: var(--primary); margin-bottom: 20px;">Welcome Back</h2>
-        <input type="email" id="auth-email" placeholder="Email Address">
-        <input type="password" id="auth-pass" placeholder="Password">
+<div class="header">
+    <h2 style="margin:0;">Earn Cash Pro</h2>
+    <p style="margin:5px 0 0; font-size:12px; opacity:0.9;">সহজ কাজ করুন, পেমেন্ট নিন দ্রুত!</p>
+</div>
+
+<div class="stat-card">
+    <span>💰 ব্যালেন্স: <span id="user-coins">0</span></span>
+    <span>🆔 ID: <span id="user-id-display">...</span></span>
+</div>
+
+<div id="user-notification">
+    <b>🔔 নোটিশ:</b> <span id="notice-text"></span>
+</div>
+
+<div id="main-content">
+    <div id="home-page" class="page">
+        <div class="card">
+            <h3>🎥 ভিডিও টাস্ক (১৫ সে.)</h3>
+            <div class="ad-box">বিজ্ঞাপন দেখুন এবং কয়েন আয় করুন</div>
+            <button class="task-btn" id="v-btn" onclick="startVideoTask()">অ্যাড দেখে ১০ কয়েন নিন</button>
+            <p id="v-timer" style="text-align:center; color:red; font-weight:bold;"></p>
+        </div>
         
-        <button class="task-btn" id="auth-btn" onclick="handleAuth()">Login Now</button>
-        
-        <div style="margin-top: 15px;">
-            <span class="link-text" id="auth-toggle" onclick="toggleAuthMode()">Create an account</span><br>
-            <span class="link-text" style="color: var(--accent); font-weight: bold;" onclick="forgotPassword()">Forgot Password?</span>
+        <div class="card">
+            <h3>👫 রেফারাল বোনাস</h3>
+            <div class="refer-box">
+                <p style="margin:0; font-size:12px; color:#555;">আপনার রেফার কোড:</p>
+                <h3 id="ref-code-text" style="margin:5px 0; color:var(--primary);">...</h3>
+                <button class="task-btn" style="background:#673ab7; font-size: 13px;" onclick="shareReferral()">বন্ধুদের সাথে শেয়ার করুন</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🔗 সোশ্যাল মিডিয়া টাস্ক</h3>
+            <button class="task-btn" style="background:#ff0000" onclick="handleSocial('https://www.youtube.com/@sobujsalmanofficial')">YouTube Subscribe</button>
+            <button class="task-btn" style="background:#1877f2" onclick="handleSocial('https://www.facebook.com/bdbigbazzarofficial')">Facebook Follow</button>
+        </div>
+    </div>
+
+    <div id="games-page" class="page" style="display:none;">
+        <div class="card" style="background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; text-align:center;">
+            <h3>🎁 ডেইলি বোনাস</h3>
+            <button class="task-btn" style="background:white; color:#6e8efb" onclick="claimDaily()">বোনাস ক্লেইম করুন</button>
+        </div>
+        <div class="card" style="text-align:center;">
+            <h3>🎡 লাকি স্পিন</h3>
+            <div id="wheel" style="font-size:50px; margin: 10px 0;">🎡</div>
+            <button class="task-btn" id="spin-btn" onclick="startSpin()">স্পিন করে জিতুন</button>
+        </div>
+    </div>
+
+    <div id="leaderboard-page" class="page" style="display:none;">
+        <div class="card">
+            <h3 style="text-align:center;">🏆 সেরা ১০ অর্জনকারী</h3>
+            <table class="leader-table">
+                <thead>
+                    <tr><th>Rank</th><th>User ID</th><th>Coins</th></tr>
+                </thead>
+                <tbody id="leader-body">
+                    <tr><td colspan="3" style="text-align:center;">লোড হচ্ছে...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="withdraw-page" class="page" style="display:none;">
+        <div class="card">
+            <h3>💸 পেমেন্ট নিন</h3>
+            <select id="method">
+                <option value="Bkash">Bkash</option>
+                <option value="Nagad">Nagad</option>
+                <option value="Recharge">Mobile Recharge</option>
+            </select>
+            <input type="number" id="w-amount" placeholder="কয়েন (মিনিমাম ৫০০০)">
+            <input type="text" id="w-number" placeholder="আপনার নম্বর">
+            <button class="task-btn" style="background:var(--accent)" onclick="submitWithdraw()">রিকোয়েস্ট পাঠান</button>
+        </div>
+    </div>
+
+    <div id="support-page" class="page" style="display:none;">
+        <div class="card" style="text-align:center;">
+            <h3>🎧 হেল্প সেন্টার</h3>
+            <button class="task-btn" onclick="window.open('https://t.me/aibdkingbot')">Admin (Telegram)</button>
+            <button class="task-btn" style="background:var(--secondary)" onclick="window.open('https://t.me/aibdking')">Official Channel</button>
+        </div>
+        <div class="card" style="font-size: 13px; line-height: 1.6; color: #444; border-top: 4px solid var(--accent);">
+            <h4 style="text-align: center; color: var(--accent);">⚠️ নিয়মাবলী</h4>
+            <ol>
+                <li>VPN ব্যবহার করা সম্পূর্ণ নিষিদ্ধ।</li>
+                <li>এক ডিভাইসে একাধিক একাউন্ট করা যাবে না।</li>
+                <li>আনফলো করলে কয়েন কেটে নেওয়া হবে।</li>
+            </ol>
+        </div>
+    </div>
+
+    <div id="admin-page" class="page" style="display:none;">
+        <div class="card" style="border:2px solid red;">
+            <h3>📢 অ্যাডমিন প্যানেল</h3>
+            <textarea id="admin-msg" rows="3" placeholder="নতুন নোটিশ লিখুন..."></textarea>
+            <button class="task-btn" onclick="sendBroadcast()">নোটিশ আপডেট করুন</button>
         </div>
     </div>
 </div>
 
-<div id="app-content" style="display:none;">
-    <div class="header">
-        <h2 style="margin:0;">Earn Cash Pro</h2>
-        <p id="user-email-display" style="font-size:12px; opacity:0.8; margin-top: 5px;"></p>
-        <button onclick="logout()" style="position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 10px; font-size: 11px;">Logout</button>
-    </div>
-
-    <div class="stat-card">
-        <div style="text-align:center;">
-            <span style="font-size:11px; color:#999; text-transform: uppercase;">Coins</span>
-            <span style="font-size:22px; font-weight:bold; color:var(--primary); display: block;" id="user-coins">0</span>
-        </div>
-        <div style="text-align:center;">
-            <span style="font-size:11px; color:#999; text-transform: uppercase;">Short ID</span>
-            <span style="font-size:18px; font-weight:bold; display: block;" id="user-id-display">...</span>
-        </div>
-    </div>
-
-    <div id="main-content">
-        <div id="home-page" class="page">
-            <div class="card" style="background: linear-gradient(135deg, #2ecc71, #27ae60); color: white;">
-                <h3>🎁 Daily Bonus</h3>
-                <p style="font-size: 13px; opacity: 0.9;">Claim your daily reward of 50 coins!</p>
-                <button class="task-btn" style="background: white; color: #27ae60;" onclick="claimDaily()">Claim Reward</button>
-            </div>
-            <div class="card">
-                <h3>🎥 Video Task</h3>
-                <p style="font-size: 13px; color: #7f8c8d;">Watch a 15s video to earn 10 coins.</p>
-                <button class="task-btn" id="v-btn" onclick="startVideoTask()">Start Task</button>
-                <p id="v-timer" style="text-align: center; color: var(--accent); font-weight: bold;"></p>
-            </div>
-        </div>
-
-        <div id="withdraw-page" class="page" style="display:none;">
-            <div class="card">
-                <h3>💸 Cash Out</h3>
-                <input type="number" id="w-amount" placeholder="Amount (Min 5000)">
-                <input type="text" id="w-number" placeholder="Mobile Number">
-                <button class="task-btn" style="background: var(--accent);" onclick="submitWithdraw()">Request Payment</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="nav-bar" id="navbar">
-    <button class="nav-item active-nav" onclick="showTab('home', this)">🏠<br>Home</button>
-    <button class="nav-item" onclick="showTab('withdraw', this)">💰<br>Wallet</button>
+<div class="nav-bar">
+    <button class="nav-item active-nav" onclick="showTab('home', this)">🏠<br>হোম</button>
+    <button class="nav-item" onclick="showTab('games', this)">🎮<br>গেমস</button>
+    <button class="nav-item" onclick="showTab('leaderboard', this); loadLeaderboard()">🏆<br>সেরা ১০</button>
+    <button class="nav-item" onclick="showTab('withdraw', this)">💰<br>উইথড্র</button>
+    <button class="nav-item" onclick="showTab('admin', this)">⚙️<br>সেটিংস</button>
 </div>
 
 <script>
-    // Firebase Config (Replace with your actual keys if needed)
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
-  apiKey: "AIzaSyDjRLhy3fnwDUvYDKSZK6UFo5DHskfn-A4",
-  authDomain: "my-first-app-9f15d.firebaseapp.com",
-  databaseURL: "https://my-first-app-9f15d-default-rtdb.firebaseio.com",
-  projectId: "my-first-app-9f15d",
-  storageBucket: "my-first-app-9f15d.firebasestorage.app",
-  messagingSenderId: "869439564905",
-  appId: "1:869439564905:web:ac84c328fbb1c73281d6f8",
-  measurementId: "G-K33RV72HQC"
-};
-    
+        apiKey: "AIzaSyDJRLhy3fnwDUvYDKSZK6UFo5DHskfn-A4",
+        authDomain: "my-first-app-9f15d.firebaseapp.com",
+        databaseURL: "https://my-first-app-9f15d-default-rtdb.firebaseio.com",
+        projectId: "my-first-app-9f15d",
+        storageBucket: "my-first-app-9f15d.firebasestorage.app",
+        messagingSenderId: "869439564905",
+        appId: "1:869439564905:web:ac84c328fbb1c73281d6f8",
+        measurementId: "G-K33RV72MQE"
+    };
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
     const db = firebase.database();
 
-    let isLoginMode = true;
+    let userId = localStorage.getItem('bt_uid') || "user_" + Math.floor(1000 + Math.random() * 9000);
+    localStorage.setItem('bt_uid', userId);
+    document.getElementById('user-id-display').innerText = userId;
+    document.getElementById('ref-code-text').innerText = userId;
     let balance = 0;
 
-    // --- Authentication Logic ---
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            document.getElementById('auth-page').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
-            document.getElementById('navbar').style.display = 'flex';
-            document.getElementById('user-email-display').innerText = user.email;
-            document.getElementById('user-id-display').innerText = user.uid.substring(0, 8).toUpperCase();
-            loadUserData(user.uid);
-        } else {
-            document.getElementById('auth-page').style.display = 'flex';
-            document.getElementById('app-content').style.display = 'none';
-            document.getElementById('navbar').style.display = 'none';
+    // ব্যালেন্স সিঙ্ক
+    db.ref('users/' + userId).on('value', (s) => {
+        let data = s.val();
+        balance = data ? data.coins : 0;
+        document.getElementById('user-coins').innerText = balance;
+        if(!data) db.ref('users/' + userId).set({ coins: 0, userId: userId });
+    });
+
+    // নোটিশ লিসেনার
+    db.ref('broadcast/').on('value', (s) => {
+        if(s.val()) {
+            document.getElementById('user-notification').style.display = 'block';
+            document.getElementById('notice-text').innerText = s.val().message;
         }
     });
 
-    function handleAuth() {
-        const email = document.getElementById('auth-email').value;
-        const pass = document.getElementById('auth-pass').value;
-        if (!email || !pass) return alert("Please fill all fields!");
-
-        if (isLoginMode) {
-            auth.signInWithEmailAndPassword(email, pass).catch(e => alert(e.message));
-        } else {
-            auth.createUserWithEmailAndPassword(email, pass).then(res => {
-                db.ref('users/' + res.user.uid).set({ coins: 0, email: email, uid: res.user.uid, totalEarn: 0 });
-            }).catch(e => alert(e.message));
-        }
-    }
-
-    function forgotPassword() {
-        const email = document.getElementById('auth-email').value;
-        if (!email) return alert("Please enter your email first!");
-        auth.sendPasswordResetEmail(email).then(() => {
-            alert("Password reset link sent to your email!");
-        }).catch(e => alert(e.message));
-    }
-
-    function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('auth-title').innerText = isLoginMode ? "Welcome Back" : "Create Account";
-        document.getElementById('auth-btn').innerText = isLoginMode ? "Login Now" : "Sign Up";
-        document.getElementById('auth-toggle').innerText = isLoginMode ? "Create an account" : "Already have an account? Login";
-    }
-
-    function logout() { auth.signOut(); }
-
-    // --- Core App Functions ---
-    function loadUserData(uid) {
-        db.ref('users/' + uid).on('value', s => {
-            if(s.val()) {
-                balance = s.val().coins;
-                document.getElementById('user-coins').innerText = balance;
-            }
-        });
-    }
-
-    function claimDaily() {
-        const last = localStorage.getItem('last_d_' + auth.currentUser.uid);
-        if(last === new Date().toDateString()) return alert("Already claimed today!");
-        updateCoins(50);
-        localStorage.setItem('last_d_' + auth.currentUser.uid, new Date().toDateString());
-        alert("Success! 50 coins added.");
-    }
+    // --- টাস্ক ফাংশনসমূহ ---
 
     function startVideoTask() {
         let btn = document.getElementById('v-btn');
+        let timerDisplay = document.getElementById('v-timer');
+        let count = 15;
         btn.disabled = true;
         window.open('https://omg10.com/4/10587051', '_blank');
-        let c = 15;
+        
         let t = setInterval(() => {
-            document.getElementById('v-timer').innerText = "Wait " + c-- + "s";
-            if(c < 0) {
-                clearInterval(t);
-                updateCoins(10);
-                btn.disabled = false;
-                document.getElementById('v-timer').innerText = "Added 10 Coins!";
-                setTimeout(() => document.getElementById('v-timer').innerText = "", 2000);
+            timerDisplay.innerText = "অপেক্ষা করুন: " + count-- + "s";
+            if(count < 0) { 
+                clearInterval(t); 
+                updateCoins(10); 
+                btn.disabled = false; 
+                timerDisplay.innerText = ""; 
+                alert("সাফল্যের সাথে ১০ কয়েন যোগ হয়েছে!"); 
             }
         }, 1000);
     }
 
-    function updateCoins(a) {
-        db.ref('users/' + auth.currentUser.uid).update({ coins: balance + a });
+    function handleSocial(url) {
+        window.open(url, '_blank');
+        setTimeout(() => {
+            updateCoins(20);
+            alert("টাস্ক ভেরিফাই করা হয়েছে! ২০ কয়েন বোনাস পেয়েছেন।");
+        }, 8000);
     }
 
-    function showTab(t, b) {
-        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-        document.getElementById(t + '-page').style.display = 'block';
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active-nav'));
-        b.classList.add('active-nav');
+    function claimDaily() {
+        const last = localStorage.getItem('last_d');
+        const now = Date.now();
+        if(last && now - last < 86400000) return alert("২৪ ঘণ্টা পর আবার চেষ্টা করুন!");
+        updateCoins(50); 
+        localStorage.setItem('last_d', now); 
+        alert("৫০ কয়েন ডেইলি বোনাস পেয়েছেন!");
+    }
+
+    function startSpin() {
+        let win = Math.floor(Math.random() * 20);
+        updateCoins(win); 
+        alert("আপনি জিতেছেন " + win + " কয়েন!");
+    }
+
+    function updateCoins(a) { 
+        db.ref('users/' + userId).update({ coins: balance + a }); 
+    }
+
+    // লিডারবোর্ড লোড করা
+    function loadLeaderboard() {
+        const body = document.getElementById('leader-body');
+        db.ref('users').orderByChild('coins').limitToLast(10).once('value', (snapshot) => {
+            body.innerHTML = "";
+            let data = [];
+            snapshot.forEach(item => { data.push(item.val()); });
+            data.reverse().forEach((u, i) => {
+                body.innerHTML += `<tr><td>${i+1}</td><td>${u.userId}</td><td>${u.coins}</td></tr>`;
+            });
+        });
+    }
+
+    function shareReferral() {
+        const msg = `Earn Cash Pro অ্যাপে আমার রেফার কোড ${userId} ব্যবহার করে টাকা আয় করুন!`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
     }
 
     function submitWithdraw() {
         let a = parseInt(document.getElementById('w-amount').value);
         let n = document.getElementById('w-number').value;
         if(a >= 5000 && balance >= a && n.length > 10) {
-            db.ref('withdraws').push({ uid: auth.currentUser.uid, amount: a, number: n, status: 'Pending', email: auth.currentUser.email });
-            updateCoins(-a);
-            alert("Withdraw request submitted!");
-        } else alert("Invalid request or low balance!");
+            db.ref('withdraws').push({ userId, amount: a, number: n, status: 'Pending', time: Date.now() });
+            updateCoins(-a); 
+            alert("পেমেন্ট রিকোয়েস্ট পাঠানো হয়েছে! ২৪ ঘণ্টার মধ্যে পেমেন্ট পাবেন।");
+        } else alert("সঠিক তথ্য দিন অথবা পর্যাপ্ত ব্যালেন্স নেই (মিনিমাম ৫০০০)!");
+    }
+
+    function sendBroadcast() {
+        let msg = document.getElementById('admin-msg').value;
+        if(msg) {
+            db.ref('broadcast/').set({ message: msg });
+            alert("সফলভাবে নোটিশ আপডেট হয়েছে!");
+        }
+    }
+
+    function showTab(t, b) {
+        if (t === 'admin') {
+            let password = prompt("অ্যাডমিন পাসওয়ার্ড দিন:");
+            if (password !== "IloveAllahIloveMuhammad807952$") {
+                alert("ভুল পাসওয়ার্ড!"); return;
+            }
+        }
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+        document.getElementById(t + '-page').style.display = 'block';
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active-nav'));
+        b.classList.add('active-nav');
     }
 </script>
 </body>
 </html>
+
