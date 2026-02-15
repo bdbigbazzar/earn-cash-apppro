@@ -1,197 +1,210 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earn Cash Pro - Fixed Version</title>
+    <title>Earn Social Pro - Global Master</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    
+
     <style>
-        :root { --primary: #0088cc; --secondary: #28a745; --bg: #f4f7f6; --accent: #e91e63; --card-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; }
-        .header { background: var(--primary); color: white; padding: 25px 20px; border-radius: 0 0 25px 25px; text-align: center; position: relative; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin: 15px; box-shadow: var(--card-shadow); }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .task-btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s; margin-top: 5px; }
-        #auth-container, #main-app { display: none; }
-        #video-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
-        #player-container { width: 85%; max-width: 380px; aspect-ratio: 9/16; background: #000; border-radius: 15px; overflow: hidden; }
+        :root { --primary: #0088cc; --success: #28a745; --bg: #f0f2f5; --gold: #ffd700; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 70px; }
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; border-radius: 0 0 20px 20px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .card { background: white; padding: 15px; border-radius: 12px; margin: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .post-card { background: white; margin: 12px; border-radius: 15px; overflow: hidden; border: 1px solid #ddd; }
+        .post-header { padding: 12px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
+        .post-media { width: 100%; display: block; max-height: 400px; object-fit: cover; background: #000; }
+        .earnings-tag { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .task-btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; padding:20px; box-sizing:border-box; overflow-y: auto; }
+        #live-video { width: 100%; height: 75vh; background: #000; border-radius: 15px; object-fit: cover; }
     </style>
 </head>
 <body>
 
 <div id="auth-container">
-    <div class="header"><h2>Earn Cash Pro</h2><p>আপনার একাউন্টে লগইন করুন</p></div>
+    <div class="header"><h2>Earn Social Pro</h2><p>Global Earning App</p></div>
     <div class="card">
-        <h3 id="auth-title">লগইন</h3>
-        <input type="email" id="email" placeholder="ইমেল এড্রেস">
-        <input type="password" id="password" placeholder="পাসওয়ার্ড">
-        <button class="task-btn" onclick="handleAuth()" id="auth-btn">লগইন</button>
-        <p style="text-align:center; font-size:13px; margin-top:15px; cursor:pointer; color:var(--primary);" onclick="toggleAuth()">একাউন্ট নেই? নতুন খুলুন</p>
+        <h3>Login / Sign Up</h3>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <input type="text" id="referral-code-input" placeholder="Refer Code (Optional)">
+        <button class="task-btn" onclick="handleAuth()">Join & Earn Dollars ($)</button>
     </div>
 </div>
 
-<div id="main-app">
+<div id="main-app" style="display:none;">
     <div class="header">
-        <h2 style="margin:0;">Earn Cash Pro</h2>
+        <h2 id="user-coins-display" style="margin:0;">$ 0.00</h2>
         <p id="user-display" style="font-size:11px; opacity:0.8;"></p>
-        <button onclick="logout()" style="position:absolute; right:15px; top:15px; background:none; border:1px solid white; color:white; border-radius:15px; padding:2px 10px; font-size:10px;">লগআউট</button>
+        <button onclick="auth.signOut()" style="position:absolute; right:15px; top:15px; background:rgba(255,255,255,0.2); border:none; color:white; border-radius:8px; padding:5px 10px;">Logout</button>
     </div>
 
-    <div class="card" style="margin-top:-20px; text-align:center;">
-        <h2 style="margin:0; color:var(--primary);">💰 <span id="user-coins">0</span></h2>
-        <p style="margin:0; font-size:12px; color:#666;">বর্তমান ব্যালেন্স</p>
-    </div>
-
-    <div class="card">
-        <h3>🎬 Watch & Earn</h3>
-        <button class="task-btn" style="background:#ff0000;" onclick="openVideoTask('aiCjZQesNvo')">ভিডিও দেখুন (১০ কয়েন)</button>
+    <div class="card" style="background: #ff4757; color: white; text-align: center;">
+        <h4 style="margin:0;">🔴 Go Live Now ($0.01 / 10s)</h4>
+        <button class="task-btn" style="background:#fff; color:#ff4757;" onclick="startLive()">START LIVE</button>
     </div>
 
     <div class="card">
-        <h3>💸 উইথড্র রিকোয়েস্ট</h3>
-        <input type="number" id="w-amount" placeholder="কয়েন পরিমাণ (৫০০০+)">
-        <input type="text" id="w-number" placeholder="বিকাশ/নগদ নম্বর">
-        <button class="task-btn" style="background:var(--secondary);" onclick="submitWithdraw()">টাকা তুলুন</button>
+        <textarea id="post-caption" placeholder="Whats on your mind?"></textarea>
+        <input type="file" id="post-file" accept="image/*">
+        <button class="task-btn" style="background:var(--success);" onclick="uploadPost()">Publish Photo & Earn</button>
+        <p id="upload-status" style="font-size:10px; color:blue;"></p>
     </div>
 
-    <p style="text-align:center;"><button onclick="openAdmin()" style="background:none; border:none; color:#ccc; font-size:10px;">Admin Login</button></p>
-    <div id="admin-panel" class="card" style="display:none; border:2px dashed red;">
-        <h3 style="color:red;">⚙️ অ্যাডমিন কন্ট্রোল</h3>
-        <div id="withdraw-list" style="font-size:12px;"></div>
+    <div id="news-feed"></div>
+
+    <div class="card" style="text-align:center;">
+        <button class="task-btn" onclick="showWithdraw()">Withdraw Dollars</button>
     </div>
 </div>
 
-<div id="video-overlay">
-    <div id="player-container"><div id="yt-player"></div></div>
-    <p style="color:white; margin-top:10px;">ভিডিও শেষ হলে অটো-ক্লোজ হবে...</p>
+<div id="withdraw-modal" class="modal">
+    <div class="card" style="max-width:400px; margin:auto;">
+        <h3>Cash Out</h3>
+        <select id="pay-method"><option>Bkash</option><option>Nagad</option><option>PayPal</option></select>
+        <input type="text" id="pay-number" placeholder="Account Number">
+        <input type="number" id="withdraw-amount" placeholder="Amount ($)">
+        <button class="task-btn" onclick="processWithdraw()">Request Payment</button>
+        <button class="task-btn" style="background:#666;" onclick="closeModal('withdraw-modal')">Close</button>
+    </div>
+</div>
+
+<div id="live-modal" class="modal">
+    <video id="live-video" autoplay playsinline></video>
+    <div id="live-earning-display" style="color:#2ecc71; font-size:24px; text-align:center; font-weight:bold; margin-top:10px;">$ 0.00</div>
+    <button class="task-btn" style="background:red;" onclick="endLive()">STOP LIVE</button>
 </div>
 
 <script>
-    // --- আপডেট করা ফায়ারবেস কনফিগারেশন ---
+    // --- FIREBASE CONFIG (Do not change) ---
     const firebaseConfig = {
-      apiKey: "AIzaSyDJRLhy3fnwDUvYDKBZX6UFp5DHskfn-A4",
-      authDomain: "my-first-app-9f15d.firebaseapp.com",
-      databaseURL: "https://my-first-app-9f15d-default-rtdb.firebaseio.com",
-      projectId: "my-first-app-9f15d",
-      storageBucket: "my-first-app-9f15d.firebasestorage.app",
-      messagingSenderId: "669439564905",
-      appId: "1:669439564905:web:ac04c320fbb1c73281d6f8",
-      measurementId: "G-K33RV72MQE"
+        apiKey: "AIzaSyDJRLhy3fnwDUvYDKBZX6UFp5DHskfn-A4",
+        authDomain: "my-first-app-9f15d.firebaseapp.com",
+        databaseURL: "https://my-first-app-9f15d-default-rtdb.firebaseio.com",
+        projectId: "my-first-app-9f15d"
     };
-
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+    const auth = firebase.auth(), db = firebase.database();
 
-    let currentUser = null;
-    let balance = 0;
-    let isLoginMode = true;
+    // --- IMGBB CONFIG (Add your key here) ---
+    const IMGBB_API_KEY = "YOUR_IMGBB_API_KEY_HERE";
 
-    // ইউজার স্টেট চেক
+    let currentUser = null, liveInterval, liveEarnings = 0;
+
     auth.onAuthStateChanged(user => {
         if (user) {
             currentUser = user;
             document.getElementById('auth-container').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             document.getElementById('user-display').innerText = user.email;
-            loadData(user.uid);
+            loadUserData(user.uid); loadPosts();
         } else {
             document.getElementById('auth-container').style.display = 'block';
             document.getElementById('main-app').style.display = 'none';
         }
     });
 
-    function toggleAuth() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('auth-title').innerText = isLoginMode ? "লগইন" : "নিবন্ধন (Sign Up)";
-        document.getElementById('auth-btn').innerText = isLoginMode ? "লগইন" : "সাইন-আপ করুন";
-    }
-
     function handleAuth() {
-        const e = document.getElementById('email').value;
-        const p = document.getElementById('password').value;
-        if (!e || !p) return alert("সব ঘর পূরণ করুন!");
-        
-        if(isLoginMode) {
-            auth.signInWithEmailAndPassword(e, p).catch(err => alert("এরর: " + err.message));
-        } else {
-            auth.createUserWithEmailAndPassword(e, p).then(res => {
-                db.ref('users/' + res.user.uid).set({ coins: 0, email: e });
-            }).catch(err => alert("এরর: " + err.message));
-        }
-    }
-
-    function logout() { auth.signOut(); }
-
-    function loadData(uid) {
-        db.ref('users/' + uid).on('value', s => {
-            balance = s.val() ? s.val().coins : 0;
-            document.getElementById('user-coins').innerText = balance;
+        const email = document.getElementById('email').value, pass = document.getElementById('password').value, refCode = document.getElementById('referral-code-input').value.trim();
+        auth.signInWithEmailAndPassword(email, pass).catch(() => {
+            auth.createUserWithEmailAndPassword(email, pass).then(res => {
+                const uid = res.user.uid, myCode = email.split('@')[0] + Math.floor(100+Math.random()*900);
+                db.ref('users/' + uid).set({ coins: 0.10, email: email, referCode: myCode });
+                db.ref('refer_codes/' + myCode).set(uid);
+                alert("Account created! $0.10 bonus added.");
+            });
         });
     }
 
-    function updateCoins(amount) {
-        if(currentUser) db.ref('users/' + currentUser.uid).update({ coins: balance + amount });
-    }
+    function uploadPost() {
+        const file = document.getElementById('post-file').files[0], cap = document.getElementById('post-caption').value;
+        if(!file) return alert("Select File");
+        document.getElementById('upload-status').innerText = "Uploading to Free Server...";
 
-    // --- ইউটিউব এপিআই ---
-    let player;
-    let tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(tag);
+        let formData = new FormData();
+        formData.append("image", file);
 
-    function openVideoTask(vId) {
-        document.getElementById('video-overlay').style.display = 'flex';
-        if (player) player.loadVideoById(vId);
-        else {
-            player = new YT.Player('yt-player', {
-                height: '100%', width: '100%', videoId: vId,
-                playerVars: { 'autoplay': 1, 'controls': 1 },
-                events: { 'onStateChange': e => {
-                    if (e.data == YT.PlayerState.ENDED) {
-                        updateCoins(10);
-                        alert("১০ কয়েন যোগ হয়েছে!");
-                        document.getElementById('video-overlay').style.display = 'none';
-                        player.stopVideo();
-                    }
-                }}
-            });
-        }
-    }
-
-    function submitWithdraw() {
-        const amt = parseInt(document.getElementById('w-amount').value);
-        const num = document.getElementById('w-number').value;
-        if (amt >= 5000 && balance >= amt && num.length >= 11) {
-            db.ref('withdraws').push({
-                uid: currentUser.uid, email: currentUser.email,
-                amount: amt, number: num, time: Date.now()
-            }).then(() => {
-                updateCoins(-amt);
-                alert("রিকোয়েস্ট পাঠানো হয়েছে!");
-            });
-        } else alert("সঠিক তথ্য দিন (মিনিমাম ৫০০০ কয়েন)");
-    }
-
-    function openAdmin() {
-        if (prompt("অ্যাডমিন পাসওয়ার্ড:") === "admin123") {
-            document.getElementById('admin-panel').style.display = 'block';
-            db.ref('withdraws').on('value', s => {
-                const list = document.getElementById('withdraw-list');
-                list.innerHTML = "";
-                s.forEach(child => {
-                    const d = child.val();
-                    list.innerHTML += `<div style='border-bottom:1px solid #eee; padding:5px;'>
-                        ${d.email} | No: ${d.number} | <b>${d.amount}</b>
-                        <button onclick="db.ref('withdraws/${child.key}').remove()">Done</button>
-                    </div>`;
+        fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                db.ref('all_posts').push({
+                    uid: currentUser.uid,
+                    userName: currentUser.email.split('@')[0],
+                    caption: cap,
+                    fileUrl: data.data.url,
+                    postEarnings: 0,
+                    time: Date.now()
                 });
-            });
-        }
+                document.getElementById('upload-status').innerText = "Success!";
+            } else { alert("Upload failed, check API Key"); }
+        });
     }
+
+    function loadPosts() {
+        db.ref('all_posts').limitToLast(10).on('value', s => {
+            const feed = document.getElementById('news-feed'); feed.innerHTML = "";
+            s.forEach(child => {
+                const data = child.val(), pid = child.key;
+                feed.insertAdjacentHTML('afterbegin', `
+                    <div class="post-card">
+                        <div class="post-header"><b>@${data.userName}</b> <span class="earnings-tag">$ ${data.postEarnings.toFixed(2)}</span></div>
+                        <div style="padding:10px;">${data.caption}</div>
+                        <img src="${data.fileUrl}" class="post-media">
+                        <div style="padding:10px; border-top:1px solid #eee; text-align:center;">
+                            <button onclick="db.ref('users/'+currentUser.uid+'/coins').transaction(c=>(c||0)+0.01)" style="background:none; border:none; color:red; cursor:pointer;">❤️ Like & Earn $0.01</button>
+                        </div>
+                    </div>`);
+            });
+        });
+    }
+
+    function startLive() {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+            document.getElementById('live-modal').style.display = 'block';
+            document.getElementById('live-video').srcObject = stream;
+            liveInterval = setInterval(() => {
+                liveEarnings += 0.01;
+                document.getElementById('live-earning-display').innerText = "$ " + liveEarnings.toFixed(2);
+                db.ref('users/' + currentUser.uid + '/coins').transaction(c => (c || 0) + 0.01);
+            }, 10000);
+        });
+    }
+
+    function endLive() {
+        clearInterval(liveInterval);
+        if(document.getElementById('live-video').srcObject) document.getElementById('live-video').srcObject.getTracks().forEach(t => t.stop());
+        document.getElementById('live-modal').style.display = 'none';
+        alert("Earned: $" + liveEarnings.toFixed(2));
+        liveEarnings = 0;
+    }
+
+    function loadUserData(uid) {
+        db.ref('users/' + uid).on('value', s => {
+            document.getElementById('user-coins-display').innerText = "$ " + (s.val().coins || 0).toFixed(2);
+        });
+    }
+
+    function processWithdraw() {
+        const amt = parseFloat(document.getElementById('withdraw-amount').value);
+        db.ref('users/' + currentUser.uid + '/coins').once('value', s => {
+            if(amt >= 5 && s.val() >= amt) {
+                db.ref('users/' + currentUser.uid + '/coins').transaction(c => c - amt);
+                db.ref('withdraw_requests').push({ uid: currentUser.uid, amount: amt, method: document.getElementById('pay-method').value, number: document.getElementById('pay-number').value });
+                alert("Withdraw Request Sent!"); closeModal('withdraw-modal');
+            } else { alert("Minimum $5 and sufficient balance required!"); }
+        });
+    }
+
+    function showWithdraw() { document.getElementById('withdraw-modal').style.display = 'block'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 </script>
 </body>
 </html>
